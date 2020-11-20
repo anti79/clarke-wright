@@ -20,8 +20,8 @@ function getInput() {
 ctx.fillStyle = 'rgb(200, 0, 0)';
 ctx.beginPath()
 //variables begin
-var startingX = 25;
-var startingY = 25;
+var startingX = 10;
+var startingY = 15;
 var canvasWidth = canvas.getAttribute("width");
 var canvasHeight = canvas.getAttribute("height");
 var centerX = canvasWidth/2;
@@ -57,7 +57,7 @@ for(var i=0;i<array.length;i++) {
 					if(i2==j) isAbove = false;
 				} 
 				if(isAbove)newArr.push(round(getDistance(array[i], array[j])))
-				else newArr.push(round(getImprovement(array[i], array[j])));
+				else newArr.push((getImprovement(array[i], array[j])));
 				
 			}
 		}
@@ -96,20 +96,24 @@ function getDistance(node1, node2) {
 	return (Math.sqrt((node2.x - node1.x)*(node2.x - node1.x) + (node2.y - node1.y)*(node2.y - node1.y)));
 }
 function getImprovement(node1, node2) {
-	var centerNode = new Node(centerX/scale, centerY/scale, -1) //creates a fake node in the center of the graph
+	var centerNode = new Node(startingX, startingY, -1) //creates a fake node in the center of the graph
 	var half_radial1 = getDistance(node1, centerNode);
+	console.log(half_radial1)
 	var half_radial2 = getDistance(node2, centerNode);
-	var total_radial = half_radial1*2 + half_radial2*2;
-	var new_route = half_radial1 + getDistance(node1, node2) + half_radial2;
+	console.log(half_radial2)
+	var total_radial = ((half_radial1) + (half_radial2))*2;
+	var new_route = half_radial1 + half_radial2 + getDistance(node1, node2);
 	var improvement = total_radial - new_route;
 	if(improvement<0) improvement = 0;
-	return improvement;
+	return round(improvement);
 }
 function round(value) {
     if((value%1)==0) return value
 	else return value.toFixed(2);
 }
 function solve() {
+	startingX = document.getElementById("startingX").value
+	startingY = document.getElementById("startingY").value
 	if(used) location.reload();
 	drawGraph();
 	drawTable();

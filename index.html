@@ -5,9 +5,11 @@
 <style>
 canvas {
 	border: 1px solid black;
+	display: inline-block;
 }
 textarea {
-	height: 496px;
+	height: 300px;
+	vertical-align: top;
 }
 .right {
 	float: right;
@@ -16,10 +18,14 @@ body {
 	font-family: Helvetica;
 	font-size:large;
 	color:#444;
-	padding:0
+	padding: 5px;
 }
 table {
 	color: black;
+}
+.additional-input {
+	display: inline-block;
+	vertical-align: top;
 }
 </style>
 <meta charset="utf-8" />
@@ -28,6 +34,9 @@ table {
 <body>
 <canvas id="graph" width="500" height="500"> </canvas>
 <textarea id="node-data" placeholder="Введите данные сюда..."></textarea>
+<div class="additional-input">
+<input id="startingX"  placeholder="Начальный X"></input><br><input placeholder="Начальный Y" id="startingY"></input>
+</div>
 <span class="right">Введите данные в формате:<br><br>
 38 4 25<br>
 7 19 525<br>
