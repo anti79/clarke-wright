@@ -1,12 +1,39 @@
 console.log("script started");
+var center;
+function solve() {
+	scale = document.getElementById("scale-input").value;
+	center = new Node(startingX, startingY, -1);
+	if(used) location.reload();
+	drawGraph();
+	drawTable(table);
+	used = true;
+}
+
+
+
 // --------CANVAS STUFF---------
 var canvas = document.getElementById("graph");
 var ctx = canvas.getContext('2d');
+
+//variables begin
+var canvasWidth = canvas.getAttribute("width");
+var canvasHeight = canvas.getAttribute("height");
+var centerX = canvasWidth/2;
+var centerY = canvasHeight/2;
+var scale;
+var startingX = document.getElementById("startingX").value
+var startingY = document.getElementById("startingY").value
+
+//variables end
+
 function Node(x, y, weight) {
 	this.x = x;
 	this.y = y;
 	this.weight = weight;
+	this.conn1 = center;
+	this.conn2 = center;
 }
+
 var array = []
 let used = false;
 function getInput() {
@@ -18,31 +45,22 @@ function getInput() {
 		array.push(tmp_node);
 	}
 }
-ctx.fillStyle = 'rgb(200, 0, 0)';
+ctx.fillStyle = 'rgb(0, 0, 200)';
 ctx.beginPath()
 
-//variables begin
-var startingX = 10;
-var startingY = 15;
-var canvasWidth = canvas.getAttribute("width");
-var canvasHeight = canvas.getAttribute("height");
-var centerX = canvasWidth/2;
-var centerY = canvasHeight/2;
-var scale = 9;
-//variables end
+
 
 function drawGraph() {
 	getInput();
 	console.log("Drawing graph!");
-	ctx.moveTo(centerX, centerY);
 	for(var i=0;i<array.length;i++) {
+		ctx.moveTo(array[i].x*scale, array[i].y*scale);
+		ctx.lineTo(array[i].conn1.x*scale, array[i].conn1.y*scale);
+		ctx.stroke();
+		ctx.fillRect(array[i].x*scale,array[i].y*scale,5,5);
+		ctx.strokeText((i+1) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
+		ctx.moveTo(array[i].x*scale, array[i].y*scale);
 	
-	ctx.lineTo(array[i].x*scale, array[i].y*scale);
-	ctx.stroke();
-	ctx.strokeText((i+1) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5 )
-	
-	ctx.moveTo(centerX, centerY);
-	//console.log(array[i].x*scale, array[i].y*scale)
 	}
 }
 // ----WORKING WITH THE TABLE----
@@ -84,12 +102,12 @@ function drawTable(myArray) { // building the HTML
 	console.log("Drawing table!")
     var result = "<table border=1>";
 	result += "<td>  </td>"
-	result += "<td colspan=100%>Матрица расстояний между пунктами (dij), км</tr>"
+	result += "<td colspan=100%>Матрица расстояний между пунктами (d<sub>ij</sub>), км</tr>"
     for(var i=0; i<myArray.length; i++) {
         result += "<tr>";
         for(var j=0; j<myArray[i].length; j++){
 			if(j==0&&i==0) {
-				result += "<td rowspan=100%>"+"Матрица <br>километровых <br>выигрышей(sij), км"+"</td>";
+				result += "<td rowspan=100%>"+"Матрица <br>километровых <br>выигрышей(s<sub>ij</sub>), км"+"</td>";
 			}
             result += "<td>"+myArray[i][j]+"</td>";
         }
@@ -119,14 +137,23 @@ function round(value) {
     if((value%1)==0) return value
 	else return value.toFixed(2);
 }
-function solve() {
 
-	startingX = document.getElementById("startingX").value
-	startingY = document.getElementById("startingY").value
-	if(used) location.reload();
-	drawGraph();
-	drawTable(table);
-	used = true;
+// ----ALGORITHM----
+function ClarkeWright() {
+	savingsTable = createTable("below");
+	smax = maxFrom2DArray(savingsTable);
 	
+	
+}
+function maxFrom2DArray(arr) {
+	var max;
+	for(var i=0; i<arr.length;i++) {
+		for(var j=0; j<arr.length; j++) {
+			if(i==j) arr[i][j] = -1;	 //remove the diagonal
+		}
+	}
+	flattened = arr.flat() // it's 4 pm babe
+	max = Math.max.apply(null, flattened)
+	console.log(max)
 
 }
