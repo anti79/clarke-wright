@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Clarke-Wright Algorithm</title>
+<style>
+canvas {
+	border: 1px solid black;
+}
+textarea {
+	height: 496px;
+}
+.right {
+	float: right;
+}
+body {
+	font-family: Helvetica;
+	font-size:large;
+	color:#444;
+	padding:0
+}
+table {
+	color: black;
+}
+</style>
+<meta charset="utf-8" />
+
+</head>
+<body>
+<canvas id="graph" width="500" height="500"> </canvas>
+<textarea id="node-data" placeholder="Введите данные сюда..."></textarea>
+<span class="right">Введите данные в формате:<br><br>
+38 4 25<br>
+7 19 525<br>
+41 18 675<br>
+и т.д.......<br><br>
+где первое число - х, второе - у, третье - вес узла.
+</span>
+<br>
+
+<button onclick="solve()">РЕШИТЬ</button>
+
+
+
+<div id="table"></div>
+
+<script src="script.js" type="text/javascript"></script>
+</body>
+<html>
