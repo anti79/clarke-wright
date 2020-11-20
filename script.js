@@ -1,4 +1,5 @@
 console.log("script started");
+// --------CANVAS STUFF---------
 var canvas = document.getElementById("graph");
 var ctx = canvas.getContext('2d');
 function Node(x, y, weight) {
@@ -19,6 +20,7 @@ function getInput() {
 }
 ctx.fillStyle = 'rgb(200, 0, 0)';
 ctx.beginPath()
+
 //variables begin
 var startingX = 10;
 var startingY = 15;
@@ -28,6 +30,7 @@ var centerX = canvasWidth/2;
 var centerY = canvasHeight/2;
 var scale = 9;
 //variables end
+
 function drawGraph() {
 	getInput();
 	console.log("Drawing graph!");
@@ -42,11 +45,12 @@ function drawGraph() {
 	//console.log(array[i].x*scale, array[i].y*scale)
 	}
 }
-// ----WORKING WITH THE TABLE-----
+// ----WORKING WITH THE TABLE----
 //creating the table as an array
-function createTable() {
-table = []
-for(var i=0;i<array.length;i++) {
+
+function createTable(arg) { //arg = normal | above | below
+	var table = []
+	for(var i=0;i<array.length;i++) {
 		var newArr = []
 		table.push(newArr);
 		for(var j=0;j<array.length; j++) {
@@ -56,22 +60,28 @@ for(var i=0;i<array.length;i++) {
 				for(var i2 = i; i2 >= 0; i2--) { //test if the cell is below the diagonal
 					if(i2==j) isAbove = false;
 				} 
-				if(isAbove)newArr.push(round(getDistance(array[i], array[j])))
-				else newArr.push((getImprovement(array[i], array[j])));
+				if(isAbove&&arg=="normal") newArr.push(round(getDistance(array[i], array[j])))
+				else if((!isAbove)&&arg=="normal") newArr.push((getImprovement(array[i], array[j])));
+			
+				if(isAbove&&arg=="above" )newArr.push(round(getDistance(array[i], array[j])))
+				else if((!isAbove)&&arg=="above") newArr.push(-1);
+				
+				if(isAbove&&arg=="below") newArr.push(-1)
+				else if((!isAbove)&&arg=="below") newArr.push((getImprovement(array[i], array[j])));
+			
 				
 			}
 		}
 	}
+	return table;
 }
-var testarr =
-[
-  ["row 1, cell 1", "row 1, cell 2"], 
-  ["row 2, cell 1", "row 2, cell 2"]
-]
-function drawTable() { // building the HTML
-	createTable();
-	console.log("Drawing table")
+
+
+
+function drawTable(myArray) { // building the HTML
+	let table = createTable("normal");
 	myArray = table;
+	console.log("Drawing table!")
     var result = "<table border=1>";
 	result += "<td>  </td>"
 	result += "<td colspan=100%>Матрица расстояний между пунктами (dij), км</tr>"
@@ -98,9 +108,7 @@ function getDistance(node1, node2) {
 function getImprovement(node1, node2) {
 	var centerNode = new Node(startingX, startingY, -1) //creates a fake node in the center of the graph
 	var half_radial1 = getDistance(node1, centerNode);
-	console.log(half_radial1)
 	var half_radial2 = getDistance(node2, centerNode);
-	console.log(half_radial2)
 	var total_radial = ((half_radial1) + (half_radial2))*2;
 	var new_route = half_radial1 + half_radial2 + getDistance(node1, node2);
 	var improvement = total_radial - new_route;
@@ -112,10 +120,13 @@ function round(value) {
 	else return value.toFixed(2);
 }
 function solve() {
+
 	startingX = document.getElementById("startingX").value
 	startingY = document.getElementById("startingY").value
 	if(used) location.reload();
 	drawGraph();
-	drawTable();
+	drawTable(table);
 	used = true;
+	
+
 }
