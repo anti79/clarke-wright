@@ -13,7 +13,7 @@ function solve() {
 	
 	drawGraph();
 	drawTable(table);
-	ClarkeWright();
+	//ClarkeWright();
 	used = true;
 }
 
