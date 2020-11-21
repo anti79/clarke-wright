@@ -27,6 +27,9 @@ table {
 	display: inline-block;
 	vertical-align: top;
 }
+.additional-input > input {
+	margin: 3px;
+}
 </style>
 <meta charset="utf-8" />
 
@@ -37,8 +40,10 @@ table {
 <textarea id="node-data" placeholder="Введите данные сюда..."></textarea>
 <div class="additional-input">
 <input id="startingX"  placeholder="Начальный X"></input><br><input placeholder="Начальный Y" id="startingY"></input><br>
+<input id="capacity" placeholder="Вместимость"><br>
 Масштаб:<br> 
 <input type="range" min="1" max="30" value="15" class="slider" id="scale-input" onchange="solve()">
+
 </div>
 <span class="right">Введите данные в формате:<br><br>
 38 4 25<br>

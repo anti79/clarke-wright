@@ -1,14 +1,19 @@
 console.log("script started");
 var center;
 var used = false;
+var adj;
 function solve() {
+	getInput();
 	scale = document.getElementById("scale-input").value;
-	center = new Node(startingX, startingY, -1);
-	if(used) {
-		array = []
-	}
+	startingX = document.getElementById("startingX").value
+	startingY = document.getElementById("startingY").value
+	capacity = document.getElementById("capacity").value
+	adj = createAdjascencyMatrix();
+
+	
 	drawGraph();
 	drawTable(table);
+	//ClarkeWright();
 	used = true;
 }
 
@@ -26,7 +31,7 @@ var centerY = canvasHeight/2;
 var scale;
 var startingX = document.getElementById("startingX").value
 var startingY = document.getElementById("startingY").value
-
+var capacity = document.getElementById("capacity").value
 //variables end
 
 function Node(x, y, weight) {
@@ -38,7 +43,11 @@ function Node(x, y, weight) {
 }
 
 var array = []
+
 function getInput() {
+	array = [];
+	center = new Node(startingX, startingY, -1);
+	array.push(center);
 	var inputField = document.getElementById("node-data")
 	var lines = inputField.value.split('\n');
 	for(var i=0; i<lines.length; i++) {
@@ -47,23 +56,34 @@ function getInput() {
 		array.push(tmp_node);
 	}
 }
-ctx.fillStyle = 'rgb(0, 0, 200)';
+
 ctx.beginPath()
+ctx.fillStyle = 'rgb(0, 0, 200)'
 
 
-
-function drawGraph() {
-	if(used) ctx.clearRect(0,0,canvasWidth, canvasHeight)
-	getInput();
-	console.log("Drawing graph!");
+function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
+	if(used) {ctx.clearRect(0,0,canvasWidth, canvasHeight)
+	}
+	
+	len = array.length;
 	for(var i=0;i<array.length;i++) {
-		ctx.beginPath();
-		ctx.moveTo(array[i].x*scale, array[i].y*scale);
-		ctx.lineTo(array[i].conn1.x*scale, array[i].conn1.y*scale);
+		var adjascent = getAdjascentNodes(i);
+		console.log("adj: " + adjascent)
+		
+		for(var conn=0; conn<adjascent.length; conn++) {
+			ctx.beginPath(); //draw all the connections
+			ctx.moveTo(array[i].x*scale, array[i].y*scale);
+			ctx.lineTo(array[adjascent[conn]].x*scale, array[adjascent[conn]].y*scale);
 		ctx.stroke();
+		}
+		if(i==0) ctx.fillStyle = 'rgb(200, 0, 0)';
 		ctx.fillRect(array[i].x*scale,array[i].y*scale,5,5);
-		ctx.strokeText((i+1) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
+		ctx.fillStyle = 'rgb(0, 0, 200)'
+		ctx.closePath();
+		ctx.beginPath();
+		if(i!=0)ctx.strokeText((i+1) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
 		ctx.moveTo(array[i].x*scale, array[i].y*scale);
+		ctx.closePath();
 	
 	}
 }
@@ -76,7 +96,7 @@ function createTable(arg) { //arg = normal | above | below
 		var newArr = []
 		table.push(newArr);
 		for(var j=0;j<array.length; j++) {
-			if(j==i) newArr.push("<b>" + (i+1).toString() + "</b>"); //fill in the diagonal
+			if(j==i) newArr.push("<b>" + (i).toString() + "</b>"); //fill in the diagonal
 			else {
 				var isAbove = true;
 				for(var i2 = i; i2 >= 0; i2--) { //test if the cell is below the diagonal
@@ -97,12 +117,33 @@ function createTable(arg) { //arg = normal | above | below
 	}
 	return table;
 }
+function createAdjascencyMatrix() {
+	var matrix = [];
+	var len = array.length
+	for(var i=0; i < len; i++){
+      matrix.push([]);
+      matrix[i].push( new Array(len));
 
+      for(var j=0; j < len; j++){
+        if((i!=0)&&(j!=0))matrix[i][j] = 0;
+		else matrix[i][j] = 1;
+      }
+	}
+	matrix[0][0] = 0;
+	return matrix;
+}
 
+function getAdjascentNodes(i) {
+	var adjascent = [];
+	for(var k=0; k<array.length; k++) {
+		if(adj[i][k]==1) adjascent.push(k);
+	}
+	return adjascent;
+}
 
 function drawTable(myArray) { // building the HTML
 	let table = createTable("normal");
-	myArray = table;
+	myArray = table; //table
 	console.log("Drawing table!")
     var result = "<table border=1>";
 	result += "<td>  </td>"
@@ -144,13 +185,33 @@ function round(value) {
 
 // ----ALGORITHM----
 function ClarkeWright() {
-	savingsTable = createTable("below");
-	smax = maxFrom2DArray(savingsTable);
+	var sum = 0;
 	
+	function testConditions(i, j) {
+		var cond1 = (parseInt(array[iToConnect].weight)+parseInt(array[jToConnect].weight))<=capacity;
+		return cond1;
+	}
+	var a = 0;
+	savingsTable = createTable("below");
+	while(a<2) {
+		maxResult = maxFrom2DArray(savingsTable);
+		smax = maxResult[0];
+		var iToConnect = maxResult[2]
+		var jToConnect = maxResult[1]
+		console.log("i: " + iToConnect + "j: " + jToConnect);
+		if(testConditions(iToConnect, jToConnect)) connect(iToConnect, jToConnect);
+		savingsTable[jToConnect-1][iToConnect-1] = -1;
+		used = true;
+		a = a+1;
+	}
+	drawGraph();
+	
+	return sum;
 	
 }
-function maxFrom2DArray(arr) {
+function maxFrom2DArray(arr) { //returns array: [max, i, j]
 	var max;
+	var result = [];
 	for(var i=0; i<arr.length;i++) {
 		for(var j=0; j<arr.length; j++) {
 			if(i==j) arr[i][j] = -1;	 //remove the diagonal
@@ -158,6 +219,15 @@ function maxFrom2DArray(arr) {
 	}
 	flattened = arr.flat() // it's 4 pm babe
 	max = Math.max.apply(null, flattened)
-	console.log(max)
+	result.push(max);
+	for(var i=0; i<arr.length;i++) {//find i and j
+		for(var j=0; j<arr.length; j++) {
+			if(arr[i][j]==max){
+				result.push(i+1);
+				result.push(j+1)
+			}
+		}
+	}
+	return result;
 
 }
