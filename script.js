@@ -13,7 +13,7 @@ function solve() {
 	
 	drawGraph();
 	drawTable(table);
-	//ClarkeWright();
+	ClarkeWright();
 	used = true;
 }
 
@@ -81,7 +81,7 @@ function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
 		ctx.fillStyle = 'rgb(0, 0, 200)'
 		ctx.closePath();
 		ctx.beginPath();
-		if(i!=0)ctx.strokeText((i+1) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
+		if(i!=0)ctx.strokeText((i) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
 		ctx.moveTo(array[i].x*scale, array[i].y*scale);
 		ctx.closePath();
 	
@@ -186,21 +186,38 @@ function round(value) {
 // ----ALGORITHM----
 function ClarkeWright() {
 	var sum = 0;
-	
+	function removeCenterConnection() {
+	for(var i=0; i<adj.length; i++) {
+		var numOfConnections = 0;
+		for(var j=0; j<adj.length; j++) {
+			if(adj[i][j]==1) numOfConnections += 1;
+		}
+		if(numOfConnections>2) {
+			adj[0][i] = 0;
+			adj[i][0] = 0;
+		}
+	}
+	}
+	function connect(i, j) {
+		adj[i][j] = 1;
+		adj[j][i] = 1;
+		removeCenterConnection(i);
+	}
 	function testConditions(i, j) {
 		var cond1 = (parseInt(array[iToConnect].weight)+parseInt(array[jToConnect].weight))<=capacity;
 		return cond1;
 	}
 	var a = 0;
 	savingsTable = createTable("below");
-	while(a<2) {
+	
+	while(a<2) { // main loop
 		maxResult = maxFrom2DArray(savingsTable);
 		smax = maxResult[0];
 		var iToConnect = maxResult[2]
 		var jToConnect = maxResult[1]
 		console.log("i: " + iToConnect + "j: " + jToConnect);
 		if(testConditions(iToConnect, jToConnect)) connect(iToConnect, jToConnect);
-		savingsTable[jToConnect-1][iToConnect-1] = -1;
+		savingsTable[jToConnect][iToConnect] = -1;
 		used = true;
 		a = a+1;
 	}
@@ -223,8 +240,8 @@ function maxFrom2DArray(arr) { //returns array: [max, i, j]
 	for(var i=0; i<arr.length;i++) {//find i and j
 		for(var j=0; j<arr.length; j++) {
 			if(arr[i][j]==max){
-				result.push(i+1);
-				result.push(j+1)
+				result.push(i);
+				result.push(j)
 			}
 		}
 	}
