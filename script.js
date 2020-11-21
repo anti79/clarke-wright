@@ -1,9 +1,12 @@
 console.log("script started");
 var center;
+var used = false;
 function solve() {
 	scale = document.getElementById("scale-input").value;
 	center = new Node(startingX, startingY, -1);
-	if(used) location.reload();
+	if(used) {
+		array = []
+	}
 	drawGraph();
 	drawTable(table);
 	used = true;
@@ -35,7 +38,6 @@ function Node(x, y, weight) {
 }
 
 var array = []
-let used = false;
 function getInput() {
 	var inputField = document.getElementById("node-data")
 	var lines = inputField.value.split('\n');
@@ -51,9 +53,11 @@ ctx.beginPath()
 
 
 function drawGraph() {
+	if(used) ctx.clearRect(0,0,canvasWidth, canvasHeight)
 	getInput();
 	console.log("Drawing graph!");
 	for(var i=0;i<array.length;i++) {
+		ctx.beginPath();
 		ctx.moveTo(array[i].x*scale, array[i].y*scale);
 		ctx.lineTo(array[i].conn1.x*scale, array[i].conn1.y*scale);
 		ctx.stroke();
