@@ -1,7 +1,12 @@
 console.log("script started");
 var center;
-var used = false;
+var used = true;
 var adj;
+var routes = [];
+function worstfixever() {
+	solve();
+	solve();
+}
 function solve() {
 	getInput();
 	scale = document.getElementById("scale-input").value;
@@ -13,8 +18,7 @@ function solve() {
 	
 	drawGraph();
 	drawTable(table);
-	//ClarkeWright();
-	used = true;
+	ClarkeWright();
 }
 
 
@@ -46,7 +50,7 @@ var array = []
 
 function getInput() {
 	array = [];
-	center = new Node(startingX, startingY, -1);
+	center = new Node(startingX, startingY, 0);
 	array.push(center);
 	var inputField = document.getElementById("node-data")
 	var lines = inputField.value.split('\n');
@@ -68,21 +72,20 @@ function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
 	len = array.length;
 	for(var i=0;i<array.length;i++) {
 		var adjascent = getAdjascentNodes(i);
-		console.log("adj: " + adjascent)
 		
 		for(var conn=0; conn<adjascent.length; conn++) {
 			ctx.beginPath(); //draw all the connections
-			ctx.moveTo(array[i].x*scale, array[i].y*scale);
-			ctx.lineTo(array[adjascent[conn]].x*scale, array[adjascent[conn]].y*scale);
+			ctx.moveTo(array[i].x*scale, canvasHeight-array[i].y*scale);
+			ctx.lineTo(array[adjascent[conn]].x*scale, canvasHeight-array[adjascent[conn]].y*scale);
 		ctx.stroke();
 		}
 		if(i==0) ctx.fillStyle = 'rgb(200, 0, 0)';
-		ctx.fillRect(array[i].x*scale,array[i].y*scale,5,5);
+		ctx.fillRect(array[i].x*scale,canvasHeight-array[i].y*scale,5,5);
 		ctx.fillStyle = 'rgb(0, 0, 200)'
 		ctx.closePath();
 		ctx.beginPath();
-		if(i!=0)ctx.strokeText((i) + " ("+array[i].weight.toString()+")", array[i].x*scale, array[i].y*scale-5)
-		ctx.moveTo(array[i].x*scale, array[i].y*scale);
+		if(i!=0)ctx.strokeText((i) + " ("+array[i].weight.toString()+")", array[i].x*scale, canvasHeight-array[i].y*scale-5)
+		ctx.moveTo(array[i].x*scale, canvasHeight-array[i].y*scale);
 		ctx.closePath();
 	
 	}
@@ -144,7 +147,6 @@ function getAdjascentNodes(i) {
 function drawTable(myArray) { // building the HTML
 	let table = createTable("normal");
 	myArray = table; //table
-	console.log("Drawing table!")
     var result = "<table border=1>";
 	result += "<td>  </td>"
 	result += "<td colspan=100%>Матрица расстояний между пунктами (d<sub>ij</sub>), км</tr>"
@@ -185,6 +187,13 @@ function round(value) {
 
 // ----ALGORITHM----
 function ClarkeWright() {
+	function getRouteWeight(route) {
+		var weight = 0;
+		for(var node=0; node<route.length; node++) {
+			weight += parseInt((array[route[node]].weight));
+		}
+		return weight; 
+	}
 	var sum = 0;
 	function removeCenterConnection() {
 	for(var i=0; i<adj.length; i++) {
@@ -203,25 +212,42 @@ function ClarkeWright() {
 		adj[j][i] = 1;
 		removeCenterConnection(i);
 	}
-	function testConditions(i, j) {
-		var cond1 = (parseInt(array[iToConnect].weight)+parseInt(array[jToConnect].weight))<=capacity;
-		return cond1;
+	function mergeRoutes(route1, route2) { //route1 can have >2 nodes, route2 only has 2
+		if(route1[route1.length-1]==route2[0]) route1.push(route2[1]);
+		else route1.push(route2[0]);		
 	}
-	var a = 0;
+	var iter = 0;
 	savingsTable = createTable("below");
 	
-	while(a<2) { // main loop
-		maxResult = maxFrom2DArray(savingsTable);
+	
+	
+	while(iter<5) { // main loop
+		maxResult = maxFrom2DArray(savingsTable); 
 		smax = maxResult[0];
 		var iToConnect = maxResult[2]
 		var jToConnect = maxResult[1]
+		
 		console.log("i: " + iToConnect + "j: " + jToConnect);
-		if(testConditions(iToConnect, jToConnect)) connect(iToConnect, jToConnect);
-		savingsTable[jToConnect][iToConnect] = -1;
+		savingsTable[jToConnect][iToConnect] = -1; //block it
 		used = true;
-		a = a+1;
+		var newRoute = [];
+		newRoute.push(iToConnect);
+		newRoute.push(jToConnect);
+		if(iter==0) {
+			routes.push(newRoute); //first iteration
+			iter++;
+			continue;
+		}
+		if((getRouteWeight(newRoute)+getRouteWeight(routes[routes.length-1]))<=capacity) {
+			mergeRoutes(routes[routes.length-1], newRoute);
+		}
+		else {
+			routes.push(newRoute);
+		}
+		iter++;
+
+		
 	}
-	drawGraph();
 	
 	return sum;
 	
