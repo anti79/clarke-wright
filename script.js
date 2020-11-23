@@ -5,20 +5,19 @@ var adj;
 var routes = [];
 function worstfixever() {
 	solve();
-	solve();
+
 }
 function solve() {
-	getInput();
-	scale = document.getElementById("scale-input").value;
-	startingX = document.getElementById("startingX").value
-	startingY = document.getElementById("startingY").value
-	capacity = document.getElementById("capacity").value
-	adj = createAdjascencyMatrix();
-
 	
+	scale = document.getElementById("scale-input").value;
+	startingX = document.getElementById("startingX").value;
+	startingY = document.getElementById("startingY").value;
+	capacity = document.getElementById("capacity").value;
+	getInput();
+	generateRoutes();
 	drawGraph();
 	drawTable(table);
-	ClarkeWright();
+	//ClarkeWright();
 }
 
 
@@ -63,30 +62,41 @@ function getInput() {
 
 ctx.beginPath()
 ctx.fillStyle = 'rgb(0, 0, 200)'
-
-
-function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
-	if(used) {ctx.clearRect(0,0,canvasWidth, canvasHeight)
+function generateRoutes() {
+	for(var i=1; i<array.length; i++) {
+		var radialRoute = []
+		radialRoute.push(0)
+		radialRoute.push(i);
+		radialRoute.push(0)
+		routes.push(radialRoute);
+		console.log("generating radials")
 	}
 	
-	len = array.length;
-	for(var i=0;i<array.length;i++) {
-		var adjascent = getAdjascentNodes(i);
-		
-		for(var conn=0; conn<adjascent.length; conn++) {
-			ctx.beginPath(); //draw all the connections
-			ctx.moveTo(array[i].x*scale, canvasHeight-array[i].y*scale);
-			ctx.lineTo(array[adjascent[conn]].x*scale, canvasHeight-array[adjascent[conn]].y*scale);
-		ctx.stroke();
+}
+generateRoutes()
+function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
+	if(used) {ctx.clearRect(0,0,canvasWidth, canvasHeight)}
+	for(var route=0;route<routes.length;route++) {
+		for(var node = 0; node<routes[route].length-1; node++) {
+			var xCoords1 = array[routes[route][node]].x*scale
+			var yCoords1 = canvasHeight-array[routes[route][node]].y*scale;
+			
+			var xCoords2 = array[routes[route][node+1]].x*scale
+			var yCoords2 = canvasHeight-array[routes[route][node+1]].y*scale;
+			
+			ctx.beginPath(); 
+			ctx.moveTo(xCoords1, yCoords1);
+			ctx.lineTo(xCoords2, yCoords2);
+			ctx.stroke();
+			if(node==0) ctx.fillRect(xCoords2,yCoords2,5,5);
+			else {
+				ctx.fillStyle = 'rgb(200, 0, 0)'
+				ctx.fillRect(xCoords2,yCoords2,5,5);
+			}
+			ctx.fillStyle = 'rgb(0, 0, 200)'
+			if(node==0) ctx.strokeText((route+1) + " ("+array[route+1].weight.toString()+")", xCoords2, yCoords2-5);
 		}
-		if(i==0) ctx.fillStyle = 'rgb(200, 0, 0)';
-		ctx.fillRect(array[i].x*scale,canvasHeight-array[i].y*scale,5,5);
-		ctx.fillStyle = 'rgb(0, 0, 200)'
-		ctx.closePath();
-		ctx.beginPath();
-		if(i!=0)ctx.strokeText((i) + " ("+array[i].weight.toString()+")", array[i].x*scale, canvasHeight-array[i].y*scale-5)
-		ctx.moveTo(array[i].x*scale, canvasHeight-array[i].y*scale);
-		ctx.closePath();
+		console.info(routes[route])
 	
 	}
 }
@@ -119,29 +129,6 @@ function createTable(arg) { //arg = normal | above | below
 		}
 	}
 	return table;
-}
-function createAdjascencyMatrix() {
-	var matrix = [];
-	var len = array.length
-	for(var i=0; i < len; i++){
-      matrix.push([]);
-      matrix[i].push( new Array(len));
-
-      for(var j=0; j < len; j++){
-        if((i!=0)&&(j!=0))matrix[i][j] = 0;
-		else matrix[i][j] = 1;
-      }
-	}
-	matrix[0][0] = 0;
-	return matrix;
-}
-
-function getAdjascentNodes(i) {
-	var adjascent = [];
-	for(var k=0; k<array.length; k++) {
-		if(adj[i][k]==1) adjascent.push(k);
-	}
-	return adjascent;
 }
 
 function drawTable(myArray) { // building the HTML
@@ -184,18 +171,7 @@ function round(value) {
     if((value%1)==0) return value
 	else return value.toFixed(2);
 }
-
-// ----ALGORITHM----
-function ClarkeWright() {
-	function getRouteWeight(route) {
-		var weight = 0;
-		for(var node=0; node<route.length; node++) {
-			weight += parseInt((array[route[node]].weight));
-		}
-		return weight; 
-	}
-	var sum = 0;
-	function removeCenterConnection() {
+function removeCenterConnection() {
 	for(var i=0; i<adj.length; i++) {
 		var numOfConnections = 0;
 		for(var j=0; j<adj.length; j++) {
@@ -207,50 +183,135 @@ function ClarkeWright() {
 		}
 	}
 	}
-	function connect(i, j) {
-		adj[i][j] = 1;
-		adj[j][i] = 1;
-		removeCenterConnection(i);
+// ----ALGORITHM----
+var sum = 0;
+function ClarkeWright() {
+	console.log("running CW");
+	
+	
+	function blockCell(i, j) { //?
+		savingsTable[j][i] = -1; 
+		savingsTable[i][j] = -1;
 	}
 	function mergeRoutes(route1, route2) { //route1 can have >2 nodes, route2 only has 2
-		if(route1[route1.length-1]==route2[0]) route1.push(route2[1]);
-		else route1.push(route2[0]);		
+		if(route1[route1.length-1]==route2[0]) { // -
+			route1.push(route2[1]);
+			return;
+		}
+		if(route1[route1.length-1]==route2[1]) {
+			route1.push(route2[0]);
+			return;
+		}	
+		
+		if(route1[0]==route2[1]) {
+			route1.unshift(route2[0]);
+			return;
+		}	
+		if(route1[0]==route2[0]) {
+			route1.unshift(route2[1]);
+			return;
+		}
 	}
+
+	function isOuterNode(node) { 
+		if(node==0) console.log("incorrect call")
+		for(var rt=0;rt<routes.length;rt++) {
+			for(var nd=0; nd<routes[rt].length; nd++) {
+				if((routes[rt][nd]==node)&&((routes[rt][nd-1]==0)||(routes[rt][nd+1]==0))) return true;
+			}
+		}
+		return false;
+	}
+	function bothInRoute(node1, node2) { //+
+		for(var c=0; c<routes.length; c++) {
+			if((routes[c].includes(node1))&&(routes[c].includes(node2))) return true;
+		}
+		return false;
+		
+	}
+	function getRouteWeightByNode(node) {
+		var routeIndex;
+		for(var route=0;route<routes.length;route++) {
+			if(routes[route].includes(node)) routeIndex = route;
+		}
+		console.log(routes[routeIndex]);
+		var weight = 0;
+		for(var node=0;node<routes[routeIndex].length;node++) {
+			weight += parseInt(array[routes[routeIndex][node]].weight);
+		}
+		return weight;
+	}
+	function getRoute(node) {
+		var routeIndex;
+		for(var route=0;route<routes.length;route++) {
+			if(routes[route].includes(node)) routeIndex = route;
+		}
+		return routeIndex;
+	}
+	function merge(i, j) {
+		var iRoute = getRoute(i); 
+		var jRoute = getRoute(j); 
+		var iSlice = routes[iRoute].slice(1,-1);
+		var jSlice = routes[jRoute].slice(1,-1);
+		//var conc;
+		//if(iRoute<jRoute) conc = jSlice.concat(iSlice);
+		//if(iRoute>jRoute) conc = iSlice.concat(jSlice);
+		var conc = iSlice.concat(jSlice);
+		conc.unshift(0);
+		conc.push(0);
+		routes.splice(iRoute, 1);
+		jRoute = getRoute(j); 
+		routes.splice(jRoute, 1);
+		if(!(routes.includes(conc)))routes.push(conc);
+		else {
+			console.log("already exists");
+			return 0;
+		}
+	}
+	
 	var iter = 0;
 	savingsTable = createTable("below");
 	
 	
-	
-	while(iter<5) { // main loop
+	var save = 0; //preparation
+	var maxValues = [];
+	while(iter<21) { // main loop
+		
 		maxResult = maxFrom2DArray(savingsTable); 
 		smax = maxResult[0];
 		var iToConnect = maxResult[2]
 		var jToConnect = maxResult[1]
 		
-		console.log("i: " + iToConnect + "j: " + jToConnect);
-		savingsTable[jToConnect][iToConnect] = -1; //block it
-		used = true;
 		var newRoute = [];
 		newRoute.push(iToConnect);
-		newRoute.push(jToConnect);
-		if(iter==0) {
-			routes.push(newRoute); //first iteration
+		newRoute.push(jToConnect); //get i and j
+		
+		//пункты i* и  j* не входят в состав одного и того же маршрута
+		if(bothInRoute(iToConnect, jToConnect)) {
 			iter++;
+			blockCell(iToConnect, jToConnect);
 			continue;
 		}
-		if((getRouteWeight(newRoute)+getRouteWeight(routes[routes.length-1]))<=capacity) {
-			mergeRoutes(routes[routes.length-1], newRoute);
-		}
-		else {
-			routes.push(newRoute);
-		}
-		iter++;
-
 		
+		//пункты i* и j* являются начальным и/или конечным пунктом тех маршрутов, в состав которых они входят (не должны быть внутренними узлами имеющихся маршрутов);
+		
+		if((!isOuterNode(iToConnect))||(!isOuterNode(jToConnect))) { 
+			iter++;
+			blockCell(iToConnect, jToConnect);
+			continue;
+		}
+		//q1 + q2 <= c
+		if(getRouteWeightByNode(iToConnect)+getRouteWeightByNode(jToConnect)>capacity) {
+			iter++;
+			blockCell(iToConnect, jToConnect);
+			continue;
+		}
+		
+		if((merge(iToConnect, jToConnect))!=0) save+=smax;
+		console.log("merging: " + iToConnect + " " + jToConnect)
+		blockCell(iToConnect, jToConnect);
 	}
-	
-	return sum;
-	
+	return save;
 }
 function maxFrom2DArray(arr) { //returns array: [max, i, j]
 	var max;
