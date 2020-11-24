@@ -17,15 +17,18 @@ function solve() {
 	generateRoutes();
 	drawGraph();
 	drawTable(table);
-	ClarkeWright();
-	printResults();
+	printResults(ClarkeWright());
+
 	
 }
-function printResults()
+function printResults(res)
 {
-	document.getElementById("results").innerHTML = JSON.stringify(routes)
+	document.getElementById("results").innerHTML = JSON.stringify(routes).slice(1,-1) + "<br>" + "Суммарный километровый выигрыш: " + res + "<br>";
 }
-
+function printProcess(txt) {
+	var current = document.getElementById("process").innerHTML;
+	document.getElementById("process").innerHTML = current +"<br>" +txt;
+}
 
 // --------CANVAS STUFF---------
 var canvas = document.getElementById("graph");
@@ -176,18 +179,7 @@ function round(value) {
     if((value%1)==0) return value
 	else return value.toFixed(2);
 }
-function removeCenterConnection() {
-	for(var i=0; i<adj.length; i++) {
-		var numOfConnections = 0;
-		for(var j=0; j<adj.length; j++) {
-			if(adj[i][j]==1) numOfConnections += 1;
-		}
-		if(numOfConnections>2) {
-			adj[0][i] = 0;
-			adj[i][0] = 0;
-		}
-	}
-	}
+
 // ----ALGORITHM----
 var sum = 0;
 var maxValues = [];
@@ -259,17 +251,14 @@ function ClarkeWright() {
 		
 		if((iSlice[0]==i)&&(jSlice[jSlice.length-1]==j)) {
 			conc = jSlice.concat(iSlice);
-			console.log("case1")
 		}
 		else {
 			conc = iSlice.concat(jSlice);
 			conc=conc.reverse();
-			console.log("case2")
 		}
 
 		console.log(i + "   " +j)
 		console.log("isl: " + JSON.stringify(iSlice) + " jsl:" + JSON.stringify(jSlice));
-		console.log(conc);
 		conc.unshift(0);
 		conc.push(0);
 		routes.splice(iRoute, 1);
@@ -304,6 +293,7 @@ function ClarkeWright() {
 		if(bothInRoute(iToConnect, jToConnect)) {
 			iter++;
 			blockCell(iToConnect, jToConnect);
+			printProcess(iToConnect + " и " + jToConnect + " оба в маршруте")
 			continue;
 		}
 		
@@ -312,21 +302,24 @@ function ClarkeWright() {
 		if((!isOuterNode(iToConnect))||(!isOuterNode(jToConnect))) { 
 			iter++;
 			blockCell(iToConnect, jToConnect);
+			printProcess(iToConnect + " или " + jToConnect + " является внутренним узлом")
 			continue;
 		}
 		//q1 + q2 <= c
 		if(getRouteWeightByNode(iToConnect)+getRouteWeightByNode(jToConnect)>capacity) {
 			iter++;
 			blockCell(iToConnect, jToConnect);
+			printProcess("Превышен максимальный объём груза.")
 			continue;
 		}
 		
 		if((merge(iToConnect, jToConnect))!=0) {
 			save+=smax;
-			
+			printProcess("Обьединены маршруты по узлам " + iToConnect + " и " + jToConnect)
 		}
 		blockCell(iToConnect, jToConnect);
 	}
+	console.log(save)
 	return save;
 }
 function maxFrom2DArray(arr) { //returns array: [max, i, j]
