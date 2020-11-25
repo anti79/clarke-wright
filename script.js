@@ -108,6 +108,10 @@ function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
 	
 	}
 }
+function redraw() {
+	ctx.clearRect(0,0,canvasWidth,canvasHeight)
+drawGraph()
+}
 // ----WORKING WITH THE TABLE----
 //creating the table as an array
 
