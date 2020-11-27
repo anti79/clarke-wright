@@ -55,6 +55,7 @@ table {
 <div class="additional-input">
 <input id="startingX"  placeholder="Начальный X" onchange="getInput()"></input><br><input placeholder="Начальный Y" id="startingY"></input><br>
 <input id="capacity" placeholder="Вместимость"><br>
+<input id="iterations" placeholder="Итераций"><br><br>
 Масштаб:<br> 
 <input type="range" min="1" max="30" value="15" class="slider" id="scale-input" onchange="solve();">
 
@@ -68,8 +69,8 @@ table {
 </span>
 <br>
 
-<button id="solve" onclick="worstfixever()">РЕШИТЬ</button>
-
+<button id="solve" onclick="worstfixever()">Решить</button>
+<button id="redraw" onclick="redraw()">Перерисовать</button>
 
 <div id="blocks">
 <div id="table"></div>

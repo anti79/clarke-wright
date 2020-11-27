@@ -82,6 +82,10 @@ function generateRoutes() {
 	
 }
 generateRoutes()
+function redraw() {
+	ctx.clearRect(0,0,canvasWidth, canvasHeight);
+	drawGraph();
+}
 function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
 	if(used) {ctx.clearRect(0,0,canvasWidth, canvasHeight)}
 	for(var route=0;route<routes.length;route++) {
@@ -96,12 +100,7 @@ function drawGraph() { //coords: array[i].x*scale, array[i].y*scale
 			ctx.moveTo(xCoords1, yCoords1);
 			ctx.lineTo(xCoords2, yCoords2);
 			ctx.stroke();
-			if(node==0) ctx.fillRect(xCoords2,yCoords2,5,5);
-			else {
-				ctx.fillStyle = 'rgb(200, 0, 0)'
-				ctx.fillRect(xCoords2,yCoords2,5,5);
-			}
-			ctx.fillStyle = 'rgb(0, 0, 200)'
+			ctx.fillRect(xCoords2,yCoords2,5,5);
 			if(node==0) ctx.strokeText((route+1) + " ("+array[route+1].weight.toString()+")", xCoords2, yCoords2-5);
 		}
 		console.info(routes[route])
@@ -280,7 +279,7 @@ function ClarkeWright() {
 	
 	
 	
-	while(iter<21) { // main loop
+	while(iter<document.getElementById("iterations").value) { // main loop
 		
 		maxResult = maxFrom2DArray(savingsTable); 
 		smax = maxResult[0];
